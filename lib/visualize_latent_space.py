@@ -13,7 +13,8 @@ def visualize_latent_space(model, facedata, mesh_path=None):
 
 
     while(1):
-        input_key = readchar.readchar()
+        input_key = readchar.readkey()
+
         if input_key == "q":
             latent_vector[0][0] = 1.01*latent_vector[0][0]
         elif input_key == "w":
@@ -49,6 +50,8 @@ def visualize_latent_space(model, facedata, mesh_path=None):
             latent_vector[0][7] = 0.99*latent_vector[0][7]
         elif input_key == "\x1b":
             break
+        else:
+            print('Unknown option.')
 
         recon_vec = model.decode(latent_vector)
         facedata.show_mesh(viewer=viewer, mesh_vecs=recon_vec, figsize=(1,1))

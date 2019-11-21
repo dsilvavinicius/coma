@@ -885,7 +885,7 @@ class cgcnn(base_model):
         return tf.transpose(x, perm=[0, 2, 1])  # N x M x Fout
 
     def fourier(self, x, L, Fout, K):
-        print K, L.shape[0]
+        print(K, L.shape[0])
         assert K == L.shape[0]  # artificial but useful to compute number of parameters
         N, M, Fin = x.get_shape()
         N, M, Fin = int(N), int(M), int(Fin)
@@ -1285,7 +1285,7 @@ class coma(base_model):
                         x = self.brelu(x)
                     with tf.name_scope('pooling'):
                         x = self.pool(x, self.D[i])
-        
+
             # Fully connected hidden layers.
             #N, M, F = x.get_shape()
             x = tf.reshape(x, [int(N), int(self.p[-1]*self.F[-1])])  # N x MF

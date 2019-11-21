@@ -1,6 +1,6 @@
 results/*
 summaries/*
+checkpoints/*
 logger.txt
 *.pyc
 *.npy
-

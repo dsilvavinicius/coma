@@ -46,10 +46,10 @@ print("Generating Transform Matrices ..")
 
 M,A,D,U = mesh_sampling.generate_transform_matrices(facedata.reference_mesh, ds_factors)
 
-A = map(lambda x:x.astype('float32'), A)
-D = map(lambda x:x.astype('float32'), D)
-U = map(lambda x:x.astype('float32'), U)
-p = map(lambda x:x.shape[0], A)
+A = list(map(lambda x:x.astype('float32'), A))
+D = list(map(lambda x:x.astype('float32'), D))
+U = list(map(lambda x:x.astype('float32'), U))
+p = list(map(lambda x:x.shape[0], A))
 
 X_train = facedata.vertices_train.astype('float32')
 X_val = facedata.vertices_val.astype('float32')
@@ -101,8 +101,8 @@ if args.mode in ['test']:
     if args.viz:
         from psbody.mesh import MeshViewers
         viewer_recon = MeshViewers(window_width=800, window_height=1000, shape=[5, 4], titlebar='Mesh Reconstructions')
-        for i in range(predictions.shape[0]/20):
-            facedata.show_mesh(viewer=viewer_recon, mesh_vecs=predictions_unperm[i*20:(i+1)*20], figsize=(5,4))
+        for i in range(predictions.shape[0]//20):
+            facedata.show_mesh(viewer=viewer_recon, mesh_vecs=predictions[i*20:(i+1)*20], figsize=(5,4))
             time.sleep(0.1)
 elif args.mode in ['sample']:
 	meshes = facedata.get_normalized_meshes(args.mesh1, args.mesh2)

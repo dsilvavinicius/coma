@@ -152,11 +152,11 @@ class MakeSlicedTimeDataset(object):
 				trainpaths += [datapaths[i]]
 
 		if opt=="train":
-			print opt+" data of size: ", len(trainpaths)
+			print(opt+" data of size: ", len(trainpaths))
 			#print(trainpaths[:10])
 			return trainpaths
 		if opt=="test":
-			print opt+" data of size: ", len(testpaths)
+			print(opt+" data of size: ", len(testpaths))
 			return testpaths
 
 	def gather_data(self, datapaths):
@@ -175,8 +175,8 @@ class MakeSlicedTimeDataset(object):
 		np.save(self.dataset_name+'/train', self.train_vertices)
 		np.save(self.dataset_name+'/test', self.test_vertices)
 
-		print "Saving ... ", self.dataset_name+'/train'
-		print "Saving ... ", self.dataset_name+'/test'
+		print("Saving ... ", self.dataset_name+'/train')
+		print("Saving ... ", self.dataset_name+'/test')
 		return 0
 
 class MakeIdentityExpressionDataset(object):
@@ -211,18 +211,18 @@ class MakeIdentityExpressionDataset(object):
 
 		for i in range(len(datapaths)):
 			p = datapaths[i]
-			if p.split('/')[path_flagger] == self.test_exp:
+			if p.split('\\')[path_flagger] == self.test_exp:
 				testpaths += [datapaths[i]]
 				#print(datapaths[i])
 			else:
 				trainpaths += [datapaths[i]]
 
 		if opt=="train":
-			print opt+" data of size: ", len(trainpaths)
+			print(opt+" data of size: ", len(trainpaths))
 			#print(trainpaths[:10])
 			return trainpaths
 		if opt=="test":
-			print opt+" data of size: ", len(testpaths)
+			print(opt+" data of size: ", len(testpaths))
 			return testpaths
 
 	def gather_data(self, datapaths):
@@ -242,8 +242,8 @@ class MakeIdentityExpressionDataset(object):
 		np.save(self.dataset_name+'/train', self.train_vertices)
 		np.save(self.dataset_name+'/test', self.test_vertices)
 
-		print "Saving ... ", self.dataset_name+'/train'
-		print "Saving ... ", self.dataset_name+'/test'
+		print("Saving ... ", self.dataset_name+'/train')
+		print("Saving ... ", self.dataset_name+'/test')
 		return 0
 
 def generateSlicedTimeDataSet(data_path, save_path):
