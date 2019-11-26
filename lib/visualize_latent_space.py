@@ -37,8 +37,8 @@ class LatentSpaceVisualization:
         master = tk.Tk()
 
         for i in range(len(self.latent_vector[0])):
-            slider = tk.Scale(master, from_=0.0, to=10.0, resolution=0.1, length=100, orient=tk.HORIZONTAL)
-            slider.set(1)
+            slider = tk.Scale(master, from_=-5.0, to=5.0, resolution=0.1, length=100, orient=tk.HORIZONTAL)
+            slider.set(self.latent_vector[0][i])
             slider.pack()
             slider.bind("<ButtonRelease-1>", self.update_value)
             self.sliders.append(slider)
