@@ -1,57 +1,46 @@
 from psbody.mesh import Mesh, MeshViewers
 import readchar
 import numpy as np
+import tkinter as tk
 
-def visualize_latent_space(model, facedata, mesh_path=None):
-    if mesh_path is not None:
-        normalized_mesh = facedata.get_normalized_meshes([mesh_path])
-    else:
-        normalized_mesh = np.array([facedata.vertices_test[0]])
+class LatentSpaceVisualization:
 
-    latent_vector = model.encode(normalized_mesh)
-    viewer = MeshViewers(window_width=800, window_height=800, shape=[1, 1], titlebar='Meshes')
+    def decode_and_show(self):
+        # Decode the latent vector and show resulting mesh
+        recon_vec = self.model.decode(self.latent_vector)
+        self.facedata.show_mesh(viewer=self.viewer, mesh_vecs=recon_vec, figsize=(1, 1))
 
+    def update_value(self, event):
+        for i in range(len(self.sliders)):
+            self.latent_vector[0][i] = self.sliders[i].get()
+        self.decode_and_show()
 
-    while(1):
-        input_key = readchar.readkey()
+    def __init__(self, model, facedata, mesh_path=None):
+        # Init members
+        self.model = model
+        self.facedata = facedata
+        self.mesh_path = mesh_path
+        self.viewer = MeshViewers(window_width=800, window_height=800, shape=[1, 1], titlebar='Meshes')
 
-        if input_key == "q":
-            latent_vector[0][0] = 1.01*latent_vector[0][0]
-        elif input_key == "w":
-            latent_vector[0][1] = 1.01*latent_vector[0][1]
-        elif input_key == "e":
-            latent_vector[0][2] = 1.01*latent_vector[0][2]
-        elif input_key == "r":
-            latent_vector[0][3] = 1.01*latent_vector[0][3]
-        elif input_key == "t":
-            latent_vector[0][4] = 1.01*latent_vector[0][4]
-        elif input_key == "y":
-            latent_vector[0][5] = 1.01*latent_vector[0][5]
-        elif input_key == "u":
-            latent_vector[0][6] = 1.01*latent_vector[0][6]
-        elif input_key == "i":
-            latent_vector[0][7] = 1.01*latent_vector[0][7]
-
-        elif input_key == "a":
-            latent_vector[0][0] = 0.99*latent_vector[0][0]
-        elif input_key == "s":
-            latent_vector[0][1] = 0.99*latent_vector[0][1]
-        elif input_key == "d":
-            latent_vector[0][2] = 0.99*latent_vector[0][2]
-        elif input_key == "f":
-            latent_vector[0][3] = 0.99*latent_vector[0][3]
-        elif input_key == "g":
-            latent_vector[0][4] = 0.99*latent_vector[0][4]
-        elif input_key == "h":
-            latent_vector[0][5] = 0.99*latent_vector[0][5]
-        elif input_key == "j":
-            latent_vector[0][6] = 0.99*latent_vector[0][6]
-        elif input_key == "k":
-            latent_vector[0][7] = 0.99*latent_vector[0][7]
-        elif input_key == "\x1b":
-            break
+        # Encode
+        if mesh_path is not None:
+            normalized_mesh = self.facedata.get_normalized_meshes([mesh_path])
         else:
-            print('Unknown option.')
+            normalized_mesh = np.array([self.facedata.vertices_test[0]])
 
-        recon_vec = model.decode(latent_vector)
-        facedata.show_mesh(viewer=viewer, mesh_vecs=recon_vec, figsize=(1,1))
+        self.latent_vector = self.model.encode(normalized_mesh)
+
+        self.decode_and_show()
+
+        # Create the sliders.
+        self.sliders = []
+        master = tk.Tk()
+
+        for i in range(len(self.latent_vector[0])):
+            slider = tk.Scale(master, from_=0.0, to=10.0, resolution=0.1, length=100, orient=tk.HORIZONTAL)
+            slider.set(1)
+            slider.pack()
+            slider.bind("<ButtonRelease-1>", self.update_value)
+            self.sliders.append(slider)
+
+        tk.mainloop()

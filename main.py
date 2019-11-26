@@ -1,6 +1,6 @@
 from __future__ import print_function
 from lib import models, graph, coarsening, utils, mesh_sampling
-from lib.visualize_latent_space import visualize_latent_space
+from lib.visualize_latent_space import LatentSpaceVisualization
 import numpy as np
 import json
 import os
@@ -105,15 +105,15 @@ if args.mode in ['test']:
             facedata.show_mesh(viewer=viewer_recon, mesh_vecs=predictions[i*20:(i+1)*20], figsize=(5,4))
             time.sleep(0.1)
 elif args.mode in ['sample']:
-	meshes = facedata.get_normalized_meshes(args.mesh1, args.mesh2)
-	features = model.encode(meshes)
+    meshes = facedata.get_normalized_meshes(args.mesh1, args.mesh2)
+    features = model.encode(meshes)
 elif args.mode in ['latent']:
-    visualize_latent_space(model, facedata)
+    LatentSpaceVisualization(model, facedata)
 else:
-	if not os.path.exists(os.path.join('checkpoints', args.name)):
-	    os.makedirs(os.path.join('checkpoints', args.name))
-	with open(os.path.join('checkpoints', args.name +'params.json'),'w') as fp:
-		saveparams = copy.deepcopy(params)
-		saveparams['seed'] = args.seed
-		json.dump(saveparams, fp)
-	loss, t_step = model.fit(X_train, X_train, X_val, X_val)
+    if not os.path.exists(os.path.join('checkpoints', args.name)):
+        os.makedirs(os.path.join('checkpoints', args.name))
+    with open(os.path.join('checkpoints', args.name +'params.json'),'w') as fp:
+        saveparams = copy.deepcopy(params)
+        saveparams['seed'] = args.seed
+        json.dump(saveparams, fp)
+    loss, t_step = model.fit(X_train, X_train, X_val, X_val)

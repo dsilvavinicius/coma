@@ -1,6 +1,7 @@
 results/*
 summaries/*
 checkpoints/*
+trained_8d_bak/*
 logger.txt
 *.pyc
 *.npy
