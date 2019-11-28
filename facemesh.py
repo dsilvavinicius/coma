@@ -89,10 +89,16 @@ class FaceData(object):
 		return datasamples
 
 	def save_meshes(self, filename, meshes):
+		for prefix in range(100):
+			if os.path.exists(filename + '-' + str(prefix).zfill(3) + '-' + '000' + '.ply'):
+				prefix += 1
+			else:
+				break
+
 		for i in range(meshes.shape[0]):
 			vertices = meshes[i].reshape((self.n_vertex, 3))*self.std + self.mean
 			mesh = Mesh(v=vertices, f=self.reference_mesh.f)
-			mesh.write_ply(filename+'-'+str(i).zfill(3)+'.ply')
+			mesh.write_ply(filename + '-' + str(prefix).zfill(3) + '-' + str(i).zfill(3)+'.ply')
 		return 0
 
 	def show_mesh(self, viewer, mesh_vecs, figsize):
