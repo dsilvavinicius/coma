@@ -1,6 +1,7 @@
 from __future__ import print_function
 from lib import models, graph, coarsening, utils, mesh_sampling
 from lib.visualize_latent_space import LatentSpaceVisualization
+from projection import Projection
 import numpy as np
 import json
 import os
@@ -109,6 +110,8 @@ elif args.mode in ['sample']:
     features = model.encode(meshes)
 elif args.mode in ['latent']:
     LatentSpaceVisualization(model, facedata)
+elif args.mode in ['project']:
+    Projection(model, facedata)
 else:
     if not os.path.exists(os.path.join('checkpoints', args.name)):
         os.makedirs(os.path.join('checkpoints', args.name))
