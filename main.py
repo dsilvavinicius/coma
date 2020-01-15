@@ -111,7 +111,9 @@ elif args.mode in ['sample']:
 elif args.mode in ['latent']:
     LatentSpaceVisualization(model, facedata)
 elif args.mode in ['project']:
-    Projection(model, facedata)
+    Projection(args.name, model, facedata)
+elif args.mode in ['project_load']:
+    Projection(args.name)
 else:
     if not os.path.exists(os.path.join('checkpoints', args.name)):
         os.makedirs(os.path.join('checkpoints', args.name))
