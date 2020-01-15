@@ -1,6 +1,6 @@
 import numpy as np
 from os import path, makedirs
-from datetime import datetime
+import matplotlib.pyplot as plt
 
 
 def get_files(name):
@@ -26,7 +26,7 @@ class Projection:
 
     def compute_mesh_distances(self, i, j):
         """Computes the distance between meshes i and j."""
-        if i > j:
+        if i < j:
             vertices_dist = [self.compute_vertex_distance(i, j, k)
                              for k in range(0, self.vertices.shape[2])]
             vertices_dist = np.array(vertices_dist)
@@ -39,9 +39,29 @@ class Projection:
 
     def compute_projection_distances(self, i, j):
         """Computes the distance between projection of meshes i and j."""
-        if i > j:
+        if i < j:
             return self.compute_vertex_distance(i, j, 0)
         return 0.0
+
+    def plot_stress(self):
+        # Copy upper triangle to bottom for convenience
+        meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
+        projections_similarity = self.projections_similarity + self.projections_similarity.transpose()
+
+        # Calculate the means for meshes and projections similarities
+        meshes_means = np.array([np.mean(meshes_similarity[i])
+                                 for i in range(0, self.meshes_similarity.shape[0])])
+
+        projections_means = np.array([np.mean(projections_similarity[i] )
+                                 for i in range(0, self.projections_similarity.shape[0])])
+
+        # Calculate the stress per projected point
+        local_stress = np.divide(meshes_means, projections_means)
+
+        plt.scatter(self.projections[:, 0], self.projections[:, 1], c=local_stress)
+        plt.title("Mesh projections")
+        plt.colorbar(label="local stress")
+        plt.show()
 
     def __init__(self, name, model=None, facedata=None):
         files = get_files(name)
@@ -101,4 +121,6 @@ class Projection:
         numerator = np.sum(np.square(self.meshes_similarity - self.projections_similarity))
         denominator = np.sum(np.square(self.meshes_similarity))
         self.stress = np.sqrt(numerator / denominator)
-        print("Stress: " + str(self.stress))
+        print("Global stress: " + str(self.stress))
+
+        self.plot_stress()
