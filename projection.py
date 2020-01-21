@@ -1,14 +1,16 @@
 import numpy as np
+from sklearn.manifold import MDS
 from os import path, makedirs
 import matplotlib.pyplot as plt
 
 
-def get_files(name):
-    directory = path.join("projections", name)
-    makedirs(directory, exist_ok=True)
-    files = {"meshes_similarity" : path.join(directory, "meshes_similarity.npy"),
-             "projections" : path.join(directory, "projection.npy") ,
-             "projections_similarity" : path.join(directory, "projections_similarity.npy")}
+def get_files(proj_type, data_name):
+    main_dir = path.join('projections', data_name)
+    proj_dir = path.join(main_dir, proj_type)
+    makedirs(proj_dir, exist_ok=True)
+    files = {'meshes_similarity': path.join(main_dir, 'meshes_similarity.npy'),
+             'projections': path.join(proj_dir, 'projection.npy'),
+             'projections_similarity': path.join(proj_dir, 'projections_similarity.npy')}
     return files
 
 
@@ -33,7 +35,7 @@ class Projection:
             return vertices_dist.mean()
         return 0.0
 
-    def project(self, i):
+    def project_coma(self, i):
         """Projects mesh i."""
         return self.model.encode(np.array([self.vertices[i]]))
 
@@ -56,56 +58,64 @@ class Projection:
                                  for i in range(0, self.projections_similarity.shape[0])])
 
         # Calculate the stress per projected point
-        local_stress = np.divide(meshes_means, projections_means)
+        # local_stress = np.divide(meshes_means, projections_means)
+        local_stress = meshes_means - projections_means
 
         plt.scatter(self.projections[:, 0], self.projections[:, 1], c=local_stress)
-        plt.title("Mesh projections")
-        plt.colorbar(label="local stress")
+        plt.title('Mesh projections')
+        plt.colorbar(label='local stress')
         plt.show()
 
-    def __init__(self, name, model=None, facedata=None):
-        files = get_files(name)
+    def __init__(self, proj_type, data_name, model=None, facedata=None):
+        print('Projection type: ' + proj_type)
+
+        files = get_files(proj_type, data_name)
 
         if model is None:
-            print("##### Loading projection. #####")
+            print('##### Loading projection. #####')
 
-            self.meshes_similarity = np.load(files["meshes_similarity"])
-            self.projections = np.load(files["projections"])
-            self.projections_similarity = np.load(files["projections_similarity"])
+            self.meshes_similarity = np.load(files['meshes_similarity'])
+            self.projections = np.load(files['projections'])
+            self.projections_similarity = np.load(files['projections_similarity'])
         else:
-            print("##### Starting projection. #####")
+            print('##### Starting projection. #####')
 
             self.model = model
             self.vertices = facedata.vertices_test
             shape = self.vertices.shape
-            print("Facedata vertex matrix shape: " + str(shape))
+            print('Facedata vertex matrix shape: ' + str(shape))
 
-            print("Computing mesh distances...")
-            self.meshes_similarity = np.array([self.compute_mesh_distances(i, j)
-                                               for i in range(0, shape[0])
-                                               for j in range(0, shape[0])])
-            self.meshes_similarity.shape = (shape[0], shape[0])
+            print('Computing mesh distances...')
+            # self.meshes_similarity = np.array([self.compute_mesh_distances(i, j)
+            #                                    for i in range(0, shape[0])
+            #                                    for j in range(0, shape[0])])
+            # self.meshes_similarity.shape = (shape[0], shape[0])
 
-            # TEST
-            # self.meshes_similarity = np.zeros((2, 2))
+            # DEBUG
+            self.meshes_similarity = np.load(files['meshes_similarity'])
             #
 
-            print("Similarity meshes: " + str(self.meshes_similarity))
-            np.save(files["meshes_similarity"], self.meshes_similarity)
+            print('Similarity meshes: ' + str(self.meshes_similarity))
+            np.save(files['meshes_similarity'], self.meshes_similarity)
 
-            print("Projecting...")
-            self.projections = np.array([self.project(i)
-                                for i in range(0, shape[0])])
+            print('Projecting...')
+            if proj_type == 'coma':
+                self.projections = np.array([self.project_coma(i)
+                                            for i in range(0, shape[0])])
+            elif proj_type == 'mds':
+                embedding = MDS(dissimilarity='precomputed')
+                meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
+                self.projections = np.array(embedding.fit_transform(meshes_similarity))
+                print('projections shape: ' + str(self.projections.shape))
+            else:
+                raise ValueError('Unexpected projection type.')
+
             self.projections.shape = (shape[0], 2)
 
-            # TEST
-            # self.projections = np.zeros((2, 2))
-            #
+            print('Projections: ' + str(self.projections))
+            np.save(files['projections'], self.projections)
 
-            print("Projections: " + str(self.projections))
-            np.save(files["projections"], self.projections)
-
-            print("Computing projection distances...")
+            print('Computing projection distances...')
             self.projections_similarity = np.array([self.compute_projection_distances(i, j)
                                                     for i in range(0, shape[0])
                                                     for j in range(0, shape[0])])
@@ -115,12 +125,12 @@ class Projection:
             # self.projections_similarity = np.zeros((2, 2))
             #
 
-            print("Similarity projections: " + str(self.projections_similarity))
-            np.save(files["projections_similarity"], self.projections_similarity)
+            print('Similarity projections: ' + str(self.projections_similarity))
+            np.save(files['projections_similarity'], self.projections_similarity)
 
         numerator = np.sum(np.square(self.meshes_similarity - self.projections_similarity))
         denominator = np.sum(np.square(self.meshes_similarity))
         self.stress = np.sqrt(numerator / denominator)
-        print("Global stress: " + str(self.stress))
+        print('Global stress: ' + str(self.stress))
 
         self.plot_stress()
