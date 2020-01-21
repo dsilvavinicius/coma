@@ -4,13 +4,26 @@ from os import path, makedirs
 import matplotlib.pyplot as plt
 
 
+def plot_projections(data_name, projections):
+    for i in range(0, len(projections)):
+        plt.subplot(2, len(projections) / 2, i + 1)
+        projection = projections[i]
+        plt.scatter(projection.projections[:, 0], projection.projections[:, 1], c=projection.local_stress)
+        plt.title(data_name + ': ' + projection.proj_type + ' projection. N = ' + str(len(projection.projections))
+                  + ' Global stress = ' + str(projection.global_stress))
+        plt.colorbar(label='local stress')
+    plt.show()
+
+
 def get_files(proj_type, data_name):
     main_dir = path.join('projections', data_name)
     proj_dir = path.join(main_dir, proj_type)
     makedirs(proj_dir, exist_ok=True)
     files = {'meshes_similarity': path.join(main_dir, 'meshes_similarity.npy'),
              'projections': path.join(proj_dir, 'projection.npy'),
-             'projections_similarity': path.join(proj_dir, 'projections_similarity.npy')}
+             'projections_similarity': path.join(proj_dir, 'projections_similarity.npy'),
+             'local_stress': path.join(proj_dir, 'local_stress.npy'),
+             'global_stress': path.join(proj_dir,'global_stress.npy')}
     return files
 
 
@@ -45,28 +58,40 @@ class Projection:
             return self.compute_vertex_distance(i, j, 0)
         return 0.0
 
-    def plot_stress(self):
-        # Copy upper triangle to bottom for convenience
-        meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
-        projections_similarity = self.projections_similarity + self.projections_similarity.transpose()
+    # Second implementation
+    # def compute_stress(self):
+    #     # Copy upper triangle to bottom for convenience
+    #     meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
+    #     projections_similarity = self.projections_similarity + self.projections_similarity.transpose()
+    #
+    #     # Calculate the means for meshes and projections similarities
+    #     meshes_means = np.array([np.mean(meshes_similarity[i])
+    #                              for i in range(0, self.meshes_similarity.shape[0])])
+    #
+    #     projections_means = np.array([np.mean(projections_similarity[i] )
+    #                              for i in range(0, self.projections_similarity.shape[0])])
+    #
+    #     # Calculate the stress per projected point
+    #     # local_stress = np.divide(meshes_means, projections_means)
+    #     local_stress = meshes_means - projections_means
+    #
+    #     numerator = np.sum(np.square(self.meshes_similarity - self.projections_similarity))
+    #     denominator = np.sum(np.square(self.meshes_similarity))
+    #     global_stress = np.sqrt(numerator / denominator)
+    #
+    #     return local_stress, global_stress
 
-        # Calculate the means for meshes and projections similarities
-        meshes_means = np.array([np.mean(meshes_similarity[i])
-                                 for i in range(0, self.meshes_similarity.shape[0])])
+    def compute_stress(self):
+        local_stress = np.array(
+            [np.sum(self.meshes_similarity[i] - self.projections_similarity[i])
+             for i in range(0, self.meshes_similarity.shape[0])])
 
-        projections_means = np.array([np.mean(projections_similarity[i] )
-                                 for i in range(0, self.projections_similarity.shape[0])])
+        global_stress = np.sum(self.meshes_similarity - self.projections_similarity)
 
-        # Calculate the stress per projected point
-        # local_stress = np.divide(meshes_means, projections_means)
-        local_stress = meshes_means - projections_means
-
-        plt.scatter(self.projections[:, 0], self.projections[:, 1], c=local_stress)
-        plt.title('Mesh projections')
-        plt.colorbar(label='local stress')
-        plt.show()
+        return local_stress, global_stress
 
     def __init__(self, proj_type, data_name, model=None, facedata=None):
+        self.proj_type = proj_type
         print('Projection type: ' + proj_type)
 
         files = get_files(proj_type, data_name)
@@ -77,6 +102,15 @@ class Projection:
             self.meshes_similarity = np.load(files['meshes_similarity'])
             self.projections = np.load(files['projections'])
             self.projections_similarity = np.load(files['projections_similarity'])
+
+            self.local_stress = np.load(files['local_stress'])
+            self.global_stress = np.load(files['global_stress'])
+
+            # TEMP
+            # self.local_stress, self.global_stress = self.compute_stress()
+            # np.save(files['local_stress'], self.local_stress)
+            # np.save(files['global_stress'], self.global_stress)
+            #
         else:
             print('##### Starting projection. #####')
 
@@ -106,7 +140,7 @@ class Projection:
                 embedding = MDS(dissimilarity='precomputed')
                 meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
                 self.projections = np.array(embedding.fit_transform(meshes_similarity))
-                print('projections shape: ' + str(self.projections.shape))
+                self.global_stress = embedding.stress_
             else:
                 raise ValueError('Unexpected projection type.')
 
@@ -128,9 +162,8 @@ class Projection:
             print('Similarity projections: ' + str(self.projections_similarity))
             np.save(files['projections_similarity'], self.projections_similarity)
 
-        numerator = np.sum(np.square(self.meshes_similarity - self.projections_similarity))
-        denominator = np.sum(np.square(self.meshes_similarity))
-        self.stress = np.sqrt(numerator / denominator)
-        print('Global stress: ' + str(self.stress))
-
-        self.plot_stress()
+            self.local_stress, global_stress = self.compute_stress()
+            if proj_type == 'coma':
+                self.global_stress = global_stress
+            np.save(files['local_stress'], self.local_stress)
+            np.save(files['global_stress'], self.global_stress)

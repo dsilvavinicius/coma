@@ -1,7 +1,7 @@
 from __future__ import print_function
 from lib import models, graph, coarsening, utils, mesh_sampling
 from lib.visualize_latent_space import LatentSpaceVisualization
-from projection import Projection
+from projection import Projection, plot_projections
 import numpy as np
 import json
 import os
@@ -111,12 +111,13 @@ elif args.mode in ['sample']:
 elif args.mode in ['latent']:
     LatentSpaceVisualization(model, facedata)
 elif args.mode in ['project']:
-    # types = ("coma", "mds")
-    proj_types = ('mds', 'coma')
-    [Projection(proj_type, args.name, model, facedata) for proj_type in proj_types]
+    proj_types = ('coma', 'mds')
+    projections = [Projection(proj_type, args.name, model, facedata) for proj_type in proj_types]
+    plot_projections(args.name, projections)
 elif args.mode in ['project_load']:
     proj_types = ('coma', 'mds')
-    [Projection(proj_type, args.name) for proj_type in proj_types]
+    projections = [Projection(proj_type, args.name) for proj_type in proj_types]
+    plot_projections(args.name, projections)
 else:
     if not os.path.exists(os.path.join('checkpoints', args.name)):
         os.makedirs(os.path.join('checkpoints', args.name))
