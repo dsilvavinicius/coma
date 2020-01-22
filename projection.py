@@ -86,7 +86,7 @@ class Projection:
             [np.sum(self.meshes_similarity[i] - self.projections_similarity[i])
              for i in range(0, self.meshes_similarity.shape[0])])
 
-        global_stress = np.sum(self.meshes_similarity - self.projections_similarity)
+        global_stress = np.sum(abs(self.meshes_similarity - self.projections_similarity))
 
         return local_stress, global_stress
 
