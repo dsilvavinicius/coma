@@ -1,12 +1,13 @@
 import numpy as np
-from sklearn.manifold import MDS
+from sklearn.manifold import MDS, TSNE
 from os import path, makedirs
 import matplotlib.pyplot as plt
+from math import ceil
 
 
 def plot_projections(data_name, projections):
     for i in range(0, len(projections)):
-        plt.subplot(2, len(projections) / 2, i + 1)
+        plt.subplot(2, ceil(len(projections) / 2), i + 1)
         projection = projections[i]
         plt.scatter(projection.projections[:, 0], projection.projections[:, 1], c=projection.local_stress)
         plt.title(data_name + ': ' + projection.proj_type + ' projection. N = ' + str(len(projection.projections))
@@ -83,7 +84,7 @@ class Projection:
 
     def compute_stress(self):
         local_stress = np.array(
-            [np.sum(self.meshes_similarity[i] - self.projections_similarity[i])
+            [np.sum(abs(self.meshes_similarity[i] - self.projections_similarity[i]))
              for i in range(0, self.meshes_similarity.shape[0])])
 
         global_stress = np.sum(abs(self.meshes_similarity - self.projections_similarity))
@@ -106,11 +107,11 @@ class Projection:
             self.local_stress = np.load(files['local_stress'])
             self.global_stress = np.load(files['global_stress'])
 
-            # TEMP
-            # self.local_stress, self.global_stress = self.compute_stress()
-            # np.save(files['local_stress'], self.local_stress)
-            # np.save(files['global_stress'], self.global_stress)
-            #
+            print('Matrices loaded. Meshes similarity: ' + str(self.meshes_similarity.shape)
+                  + '\nProjections similarity: ' + str(self.projections_similarity.shape)
+                  + '\nProjections: ' + str(self.projections.shape)
+                  + '\nLocal stress: ' + str(self.local_stress.shape)
+                  + '\nGlobal stress: ' + str(self.global_stress))
         else:
             print('##### Starting projection. #####')
 
@@ -141,6 +142,11 @@ class Projection:
                 meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
                 self.projections = np.array(embedding.fit_transform(meshes_similarity))
                 self.global_stress = embedding.stress_
+            elif proj_type == 'tsne':
+                embedding = TSNE(metric='precomputed')
+                meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
+                self.projections = np.array(embedding.fit_transform(meshes_similarity))
+                self.global_stress = embedding.kl_divergence_
             else:
                 raise ValueError('Unexpected projection type.')
 

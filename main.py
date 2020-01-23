@@ -111,11 +111,11 @@ elif args.mode in ['sample']:
 elif args.mode in ['latent']:
     LatentSpaceVisualization(model, facedata)
 elif args.mode in ['project']:
-    proj_types = ('coma', 'mds')
+    proj_types = ('coma', 'mds', 'tsne')
     projections = [Projection(proj_type, args.name, model, facedata) for proj_type in proj_types]
     plot_projections(args.name, projections)
 elif args.mode in ['project_load']:
-    proj_types = ('coma', 'mds')
+    proj_types = ('coma', 'mds', 'tsne')
     projections = [Projection(proj_type, args.name) for proj_type in proj_types]
     plot_projections(args.name, projections)
 else:
