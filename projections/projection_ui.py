@@ -5,10 +5,21 @@ from math import ceil
 
 class ProjectionUI:
 
-    def onclick(self, event):
-        self.model_visualizer.latent_vector = np.array((event.xdata, event.ydata))
+    def decode_and_show(self, xy):
+        self.model_visualizer.latent_vector = np.array(xy)
         self.model_visualizer.latent_vector.shape = (1, 2)
         self.model_visualizer.decode_and_show()
+
+    def on_click(self, event):
+        self.decode_and_show((event.xdata, event.ydata))
+        self.clicking = True
+
+    def on_release(self, event):
+        self.clicking = False
+
+    def on_move(self, event):
+        if self.clicking:
+            self.decode_and_show((event.xdata, event.ydata))
 
     def plot_projections(self):
         for i in range(0, len(self.projections)):
@@ -19,7 +30,9 @@ class ProjectionUI:
                       + str(len(projection.projections)) + ' Global stress = ' + str(projection.global_stress))
             plt.colorbar(label='local stress')
             plt.get_current_fig_manager()
-            plt.gcf().canvas.mpl_connect('button_press_event', self.onclick)
+            plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
+            plt.gcf().canvas.mpl_connect('button_release_event', self.on_release)
+            plt.gcf().canvas.mpl_connect('motion_notify_event', self.on_move)
         plt.show()
 
     def __init__(self, data_name, projections, model_visualizer):
@@ -27,3 +40,4 @@ class ProjectionUI:
         self.projections = projections
         self.model_visualizer = model_visualizer
         self.plot_projections()
+        self.clicking = False
