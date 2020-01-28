@@ -1,23 +1,10 @@
 import numpy as np
 from sklearn.manifold import MDS, TSNE
 from os import path, makedirs
-import matplotlib.pyplot as plt
-from math import ceil
-
-
-def plot_projections(data_name, projections):
-    for i in range(0, len(projections)):
-        plt.subplot(2, ceil(len(projections) / 2), i + 1)
-        projection = projections[i]
-        plt.scatter(projection.projections[:, 0], projection.projections[:, 1], c=projection.local_stress)
-        plt.title(data_name + ': ' + projection.proj_type + ' projection. N = ' + str(len(projection.projections))
-                  + ' Global stress = ' + str(projection.global_stress))
-        plt.colorbar(label='local stress')
-    plt.show()
 
 
 def get_files(proj_type, data_name):
-    main_dir = path.join('projections', data_name)
+    main_dir = path.join('results', 'projections', data_name)
     proj_dir = path.join(main_dir, proj_type)
     makedirs(proj_dir, exist_ok=True)
     files = {'meshes_similarity': path.join(main_dir, 'meshes_similarity.npy'),
