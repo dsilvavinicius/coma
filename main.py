@@ -113,12 +113,12 @@ elif args.mode in ['latent']:
     LatentSpaceVisualization(model, facedata)
 elif args.mode in ['project']:
     proj_types = ('coma', 'mds', 'tsne')
-    projections = [Projection(proj_type, args.name, model, facedata) for proj_type in proj_types]
+    projections = [Projection(proj_type, args.name, facedata, model) for proj_type in proj_types]
     mesh_visualizer = LatentSpaceVisualization(model, facedata)
     ProjectionUI(args.name, projections, mesh_visualizer)
 elif args.mode in ['project_load']:
     proj_types = ('coma', 'mds', 'tsne')
-    projections = [Projection(proj_type, args.name) for proj_type in proj_types]
+    projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
     mesh_visualizer = LatentSpaceVisualization(model, facedata)
     ProjectionUI(args.name, projections, mesh_visualizer)
 else:

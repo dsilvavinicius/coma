@@ -6,6 +6,9 @@ import os
 
 class LatentSpaceVisualization:
 
+    def show(self, mesh):
+        self.facedata.show_mesh(viewer=self.viewer, mesh_vecs=mesh, figsize=(1, 1))
+
     def decode_and_show(self):
         # Decode the latent vector and show resulting mesh
         print('Showing mesh from latent vector ' + str(self.latent_vector))

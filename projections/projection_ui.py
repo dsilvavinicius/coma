@@ -1,17 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from math import ceil
-
+from projections.ilamp import Ilamp
 
 class ProjectionUI:
 
-    def decode_and_show(self, xy):
-        self.model_visualizer.latent_vector = np.array(xy)
-        self.model_visualizer.latent_vector.shape = (1, 2)
-        self.model_visualizer.decode_and_show()
+    def invert_and_show(self, event):
+        fig_axes = plt.gcf().get_axes()
+        for i in range(0, len(fig_axes)):
+            projection = self.projections[i]
+            if fig_axes[i].in_axes(event):
+                xy = np.array((event.xdata, event.ydata))
+                if projection.proj_type != 'coma':
+                    mesh = self.proj_inverse_map[projection.proj_type].invert(xy)
+                    self.model_visualizer.show(mesh)
+                else:
+                    self.model_visualizer.latent_vector = xy
+                    self.model_visualizer.latent_vector.shape = (1, 2)
+                    self.model_visualizer.decode_and_show()
+                break
 
     def on_click(self, event):
-        self.decode_and_show((event.xdata, event.ydata))
+        self.invert_and_show(event)
         self.clicking = True
 
     def on_release(self, event):
@@ -19,7 +29,7 @@ class ProjectionUI:
 
     def on_move(self, event):
         if self.clicking:
-            self.decode_and_show((event.xdata, event.ydata))
+            self.invert_and_show(event)
 
     def plot_projections(self):
         for i in range(0, len(self.projections)):
@@ -39,5 +49,11 @@ class ProjectionUI:
         self.data_name = data_name
         self.projections = projections
         self.model_visualizer = model_visualizer
-        self.plot_projections()
         self.clicking = False
+        self.proj_inverse_map = {}
+
+        for projection in projections:
+            if projection.proj_type != 'coma':
+                self.proj_inverse_map[projection.proj_type] = Ilamp(projection.vertices, projection.projections, 5)
+
+        self.plot_projections()

@@ -78,9 +78,10 @@ class Projection:
 
         return local_stress, global_stress
 
-    def __init__(self, proj_type, data_name, model=None, facedata=None):
+    def __init__(self, proj_type, data_name, facedata, model=None):
         self.proj_type = proj_type
         print('Projection type: ' + proj_type)
+        self.vertices = facedata.vertices_test
 
         files = get_files(proj_type, data_name)
 
@@ -103,18 +104,17 @@ class Projection:
             print('##### Starting projection. #####')
 
             self.model = model
-            self.vertices = facedata.vertices_test
             shape = self.vertices.shape
             print('Facedata vertex matrix shape: ' + str(shape))
 
             print('Computing mesh distances...')
-            # self.meshes_similarity = np.array([self.compute_mesh_distances(i, j)
-            #                                    for i in range(0, shape[0])
-            #                                    for j in range(0, shape[0])])
-            # self.meshes_similarity.shape = (shape[0], shape[0])
+            self.meshes_similarity = np.array([self.compute_mesh_distances(i, j)
+                                               for i in range(0, shape[0])
+                                               for j in range(0, shape[0])])
+            self.meshes_similarity.shape = (shape[0], shape[0])
 
             # DEBUG
-            self.meshes_similarity = np.load(files['meshes_similarity'])
+            # self.meshes_similarity = np.load(files['meshes_similarity'])
             #
 
             print('Similarity meshes: ' + str(self.meshes_similarity))
