@@ -8,7 +8,7 @@ class ProjectionUI:
     def invert_and_show(self, event):
         fig_axes = plt.gcf().get_axes()
         for i in range(0, len(fig_axes)):
-            projection = self.projections[i]
+            projection = self.projections[i//2]
             if fig_axes[i].in_axes(event):
                 xy = np.array((event.xdata, event.ydata))
                 if projection.proj_type != 'coma':
