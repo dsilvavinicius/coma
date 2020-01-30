@@ -4,8 +4,11 @@ from math import ceil
 from projections.ilamp import Ilamp
 
 class ProjectionUI:
+    """Exploratory UI for mesh dimensionality reduction projections. Generates a plot for each projection and a mesh
+    visualizer to present results of inverse projections. Each plot can be clicked to update the mesh visualizer with
+    the inverse projection of the point clicked."""
 
-    def invert_and_show(self, event):
+    def __invert_and_show(self, event):
         fig_axes = plt.gcf().get_axes()
         for i in range(0, len(fig_axes)):
             # Two axes per plot: the scatter plot and the color bar.
@@ -22,18 +25,19 @@ class ProjectionUI:
                     self.model_visualizer.decode_and_show()
                 break
 
-    def on_click(self, event):
-        self.invert_and_show(event)
+    def __on_click(self, event):
+        self.__invert_and_show(event)
         self.clicking = True
 
-    def on_release(self, event):
+    def __on_release(self, event):
         self.clicking = False
 
-    def on_move(self, event):
+    def __on_move(self, event):
         if self.clicking:
-            self.invert_and_show(event)
+            self.__invert_and_show(event)
 
-    def plot_projections(self):
+    def __plot_projections(self):
+        # Each projection has it plot and color bar.
         for i in range(0, len(self.projections)):
             plt.subplot(2, ceil(len(self.projections) / 2), i + 1)
             projection = self.projections[i]
@@ -41,10 +45,11 @@ class ProjectionUI:
             plt.title(self.data_name + ': ' + projection.proj_type + ' projection. N = '
                       + str(len(projection.projections)) + ' Global stress = ' + str(projection.global_stress))
             plt.colorbar(label='local stress')
-            plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
-            plt.gcf().canvas.mpl_connect('button_release_event', self.on_release)
-            plt.gcf().canvas.mpl_connect('motion_notify_event', self.on_move)
+            plt.gcf().canvas.mpl_connect('button_press_event', self.__on_click)
+            plt.gcf().canvas.mpl_connect('button_release_event', self.__on_release)
+            plt.gcf().canvas.mpl_connect('motion_notify_event', self.__on_move)
 
+        # Set up Figure size and position
         plt.gcf().set_size_inches(self.fig_size)
         manager = plt.get_current_fig_manager()
         try:
@@ -69,4 +74,4 @@ class ProjectionUI:
             if projection.proj_type != 'coma':
                 self.proj_inverse_map[projection.proj_type] = Ilamp(projection.vertices, projection.projections, 5)
 
-        self.plot_projections()
+        self.__plot_projections()
