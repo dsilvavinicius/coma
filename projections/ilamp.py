@@ -44,16 +44,16 @@ class Ilamp:
         A_t = np.transpose(A)
         print('A transposed shape ' + str(A_t.shape) + ' B shape ' + str(B.shape))
 
-        q = np.zeros(3)
+        q = np.zeros((5023, 3))
         for i in range(0, 3):
             AB = np.matmul(A_t, B[:, :, i])
 
             print('AB shape' + str(AB.shape))
 
-            U, D, V = np.linalg.svd(AB)
-            print('SVD complete. U shape: ' + str(U.shape) + 'D shape: ' + str(D.shape) + ' V shape: ' + str(V.shape))
+            U, D, V = np.linalg.svd(AB, full_matrices=False)
+            print('SVD complete. U shape: ' + str(U.shape) + ' D shape: ' + str(D.shape) + ' V shape: ' + str(V.shape))
             M = np.matmul(U, V)
-            q[i] = (p - y_til) * M + x_til[i]
+            q[:, i] = np.matmul((p - y_til), M) + x_til[:, i]
 
         print('Reverse projection q computed. Shape: ' + str(q.shape))
         return q

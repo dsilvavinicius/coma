@@ -13,6 +13,7 @@ class ProjectionUI:
                 xy = np.array((event.xdata, event.ydata))
                 if projection.proj_type != 'coma':
                     mesh = self.proj_inverse_map[projection.proj_type].invert(xy)
+                    mesh.shape = (1, 5023, 3)
                     self.model_visualizer.show(mesh)
                 else:
                     self.model_visualizer.latent_vector = xy
