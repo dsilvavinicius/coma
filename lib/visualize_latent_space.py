@@ -45,12 +45,12 @@ class LatentSpaceVisualization:
     def save_ply(self):
         self.facedata.save_meshes('mesh.ply', self.recon_vec)
 
-    def __init__(self, model, facedata, mesh_path=None):
+    def __init__(self, model, facedata, viewer_size=(800, 800), mesh_path=None):
         # Init members
         self.model = model
         self.facedata = facedata
         self.mesh_path = mesh_path
-        self.viewer = MeshViewers(window_width=800, window_height=800, shape=[1, 1], titlebar='Meshes')
+        self.viewer = MeshViewers(window_width=viewer_size[0], window_height=viewer_size[1], shape=[1, 1], titlebar='Meshes')
 
         # Encode
         if mesh_path is not None:

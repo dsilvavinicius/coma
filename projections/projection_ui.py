@@ -41,18 +41,29 @@ class ProjectionUI:
             plt.title(self.data_name + ': ' + projection.proj_type + ' projection. N = '
                       + str(len(projection.projections)) + ' Global stress = ' + str(projection.global_stress))
             plt.colorbar(label='local stress')
-            plt.get_current_fig_manager()
             plt.gcf().canvas.mpl_connect('button_press_event', self.on_click)
             plt.gcf().canvas.mpl_connect('button_release_event', self.on_release)
             plt.gcf().canvas.mpl_connect('motion_notify_event', self.on_move)
+
+        plt.gcf().set_size_inches(self.fig_size)
+        manager = plt.get_current_fig_manager()
+        try:
+            manager.window.SetPosition(self.fig_pos)
+        except AttributeError:
+            try:
+                manager.window.wm_geometry('+' + str(self.fig_pos[0]) + '+' + str(self.fig_pos[1]))
+            except AttributeError:
+                print("Could not set plots position. Using default.")
         plt.show()
 
-    def __init__(self, data_name, projections, model_visualizer):
+    def __init__(self, data_name, projections, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0)):
         self.data_name = data_name
         self.projections = projections
         self.model_visualizer = model_visualizer
         self.clicking = False
         self.proj_inverse_map = {}
+        self.fig_size = fig_size
+        self.fig_pos = fig_pos
 
         for projection in projections:
             if projection.proj_type != 'coma':

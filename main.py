@@ -114,13 +114,13 @@ elif args.mode in ['latent']:
 elif args.mode in ['project']:
     proj_types = ('coma', 'mds', 'tsne')
     projections = [Projection(proj_type, args.name, facedata, model) for proj_type in proj_types]
-    mesh_visualizer = LatentSpaceVisualization(model, facedata)
-    ProjectionUI(args.name, projections, mesh_visualizer)
+    mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
+    ProjectionUI(args.name, projections, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
 elif args.mode in ['project_load']:
     proj_types = ('coma', 'mds', 'tsne')
     projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
-    mesh_visualizer = LatentSpaceVisualization(model, facedata)
-    ProjectionUI(args.name, projections, mesh_visualizer)
+    mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
+    ProjectionUI(args.name, projections, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
 else:
     if not os.path.exists(os.path.join('checkpoints', args.name)):
         os.makedirs(os.path.join('checkpoints', args.name))
