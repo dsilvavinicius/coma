@@ -18,12 +18,12 @@ class Ilamp:
 
         # First, find the k nearest neighbors
         k = self.k
-        p.shape = (1, 2)
+        p.shape = (1, p.shape[0])
         idx = self.NN.kneighbors(p, return_distance=False)
         x = np.array([self.X[idx[i]] for i in range(0, len(idx))])
         y = np.array([self.Y[idx[i]] for i in range(0, len(idx))])
-        x.shape = (k, 5023, 3)
-        y.shape = (k, 2)
+        x.shape = (k, self.X.shape[1], self.X.shape[2])
+        y.shape = (k, p.shape[1])
         print('Neighbors found. X shape: ' + str(x.shape) + ' Y shape: ' + str(y.shape))
 
         # Then, compute the inverse projection

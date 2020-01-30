@@ -8,16 +8,17 @@ class ProjectionUI:
     def invert_and_show(self, event):
         fig_axes = plt.gcf().get_axes()
         for i in range(0, len(fig_axes)):
-            projection = self.projections[i//2]
+            # Two axes per plot: the scatter plot and the color bar.
+            projection = self.projections[i // 2]
             if fig_axes[i].in_axes(event):
                 xy = np.array((event.xdata, event.ydata))
                 if projection.proj_type != 'coma':
                     mesh = self.proj_inverse_map[projection.proj_type].invert(xy)
-                    mesh.shape = (1, 5023, 3)
+                    mesh.shape = (1, mesh.shape[0], mesh.shape[1])
                     self.model_visualizer.show(mesh)
                 else:
                     self.model_visualizer.latent_vector = xy
-                    self.model_visualizer.latent_vector.shape = (1, 2)
+                    self.model_visualizer.latent_vector.shape = (1, xy.shape[0])
                     self.model_visualizer.decode_and_show()
                 break
 
