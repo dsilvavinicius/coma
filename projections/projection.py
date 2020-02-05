@@ -44,7 +44,7 @@ class Projection:
     def __compute_projection_distances(self, i, j):
         """Computes the distance between projection of meshes i and j."""
         if i < j:
-            return self.__compute_mesh_distances(i, j, 0)
+            return self.__compute_vertex_distance(i, j, 0)
         return 0.0
 
     # Second implementation

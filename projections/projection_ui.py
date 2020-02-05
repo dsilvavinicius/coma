@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from math import ceil
 from projections.ilamp import Ilamp
+from projections.rbf import Rbf
 
 class ProjectionUI:
     """Exploratory UI for mesh dimensionality reduction projections. Generates a plot for each projection and a mesh
@@ -61,7 +62,7 @@ class ProjectionUI:
                 print("Could not set plots position. Using default.")
         plt.show()
 
-    def __init__(self, data_name, projections, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0)):
+    def __init__(self, data_name, projections, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0), inverse='lamp'):
         self.data_name = data_name
         self.projections = projections
         self.model_visualizer = model_visualizer
@@ -72,6 +73,10 @@ class ProjectionUI:
 
         for projection in projections:
             if projection.proj_type != 'coma':
-                self.proj_inverse_map[projection.proj_type] = Ilamp(projection.vertices, projection.projections, 5)
+                if inverse == 'lamp':
+                    self.proj_inverse_map[projection.proj_type] = Ilamp(projection.vertices, projection.projections, 5)
+                else:
+                    self.proj_inverse_map[projection.proj_type] = Rbf(projection.vertices, projection.projections, c=0,
+                                                                      e=1)
 
         self.__plot_projections()

@@ -3,8 +3,22 @@ from math import sqrt
 from sklearn.neighbors import NearestNeighbors
 
 class Ilamp:
+    """Inverse projection using the ILAMP algorithm described in "iLAMP: exploring high-dimensional spacing through
+    backward multidimensional projection" (https://ieeexplore.ieee.org/document/6400489)."""
 
     def __init__(self, X, Y, k):
+        """ Constructor.
+        Parameters
+        ----------
+        X : array
+            Mesh array with shape (N, m, 3), where N is the number of meshes, m is the number of vertices per mesh.
+            Last dimension is the dimension of each vertex (3 since we are working with 3-dim meshes).
+        Y : array
+            Array with the projections of the meshes in `x`. Its shape must be (N, 2), where N is the number of meshes.
+            Last dimension is the projection dimension (2 since we are in the plane).
+        k : float
+            Is the number of neighbors considered in the first step of the algorithm.
+        """
         self.X = X
         self.Y = Y
         self.k = k
@@ -14,6 +28,16 @@ class Ilamp:
         print('ILAMP created. X shape: ' + str(X.shape) + ' Y shape: ' + str(Y.shape))
 
     def invert(self, p):
+        """ Inverse project `p`.
+        Parameters
+        ----------
+        p : 2d point to be inverse projected.
+        Returns
+        -------
+        array
+            Array with the mesh that is the inverse projection of `p`. Its shape is (m, 3), where m is number of
+            vertices of the mesh.
+        """
         print('Inverting ' + str(p))
 
         # First, find the k nearest neighbors
