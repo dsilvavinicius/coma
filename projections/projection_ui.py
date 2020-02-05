@@ -13,11 +13,11 @@ class ProjectionUI:
         fig_axes = plt.gcf().get_axes()
         for i in range(0, len(fig_axes)):
             # Two axes per plot: the scatter plot and the color bar.
-            projection = self.projections[i // 2]
             if fig_axes[i].in_axes(event):
+                inverse = self.inverses[i // 2]
                 xy = np.array((event.xdata, event.ydata))
-                if projection.proj_type != 'coma':
-                    mesh = self.proj_inverse_map[projection.proj_type].invert(xy)
+                if inverse is not None:
+                    mesh = inverse.invert(xy)
                     mesh.shape = (1, mesh.shape[0], mesh.shape[1])
                     self.model_visualizer.show(mesh)
                 else:
@@ -44,7 +44,8 @@ class ProjectionUI:
             projection = self.projections[i]
             plt.scatter(projection.projections[:, 0], projection.projections[:, 1], c=projection.local_stress)
             plt.title(self.data_name + ': ' + projection.proj_type + ' projection. N = '
-                      + str(len(projection.projections)) + ' Global stress = ' + str(projection.global_stress))
+                      + str(len(projection.projections)) + ' Global stress = '
+                      + '{:.4f}'.format(projection.global_stress))
             plt.colorbar(label='local stress')
             plt.gcf().canvas.mpl_connect('button_press_event', self.__on_click)
             plt.gcf().canvas.mpl_connect('button_release_event', self.__on_release)
@@ -62,21 +63,22 @@ class ProjectionUI:
                 print("Could not set plots position. Using default.")
         plt.show()
 
-    def __init__(self, data_name, projections, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0), inverse='lamp'):
+    def __init__(self, data_name, projections, inverses, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0)):
         self.data_name = data_name
         self.projections = projections
+        self.inverses = []
         self.model_visualizer = model_visualizer
         self.clicking = False
-        self.proj_inverse_map = {}
         self.fig_size = fig_size
         self.fig_pos = fig_pos
 
-        for projection in projections:
-            if projection.proj_type != 'coma':
-                if inverse == 'lamp':
-                    self.proj_inverse_map[projection.proj_type] = Ilamp(projection.vertices, projection.projections, 5)
-                else:
-                    self.proj_inverse_map[projection.proj_type] = Rbf(projection.vertices, projection.projections, c=0,
-                                                                      e=1)
+        for i in range(0, len(projections)):
+            projection = projections[i]
+            if inverses[i] == 'coma':
+                self.inverses.append(None)
+            elif inverses[i] == 'lamp':
+                self.inverses.append(Ilamp(projection.vertices, projection.projections, 5))
+            elif inverses[i] == 'rbf':
+                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1))
 
         self.__plot_projections()
