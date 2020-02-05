@@ -42,7 +42,8 @@ class Rbf:
         phi = np.empty((N, N))
         for i in range(0, N):
             for j in range(0, N):
-                phi[i, j] = phi[j, i] = self.__rbf(y[i], y[j])
+                if i <= j:
+                    phi[i, j] = phi[j, i] = self.__rbf(y[i], y[j])
 
         print('Phi shape: ' + str(phi.shape))
 
