@@ -1,5 +1,7 @@
 import numpy as np
+from multiprocessing import Pool
 from sklearn.manifold import MDS, TSNE
+from projections.pca_projection import PCAProjection
 from os import path, makedirs
 
 
@@ -8,7 +10,7 @@ def get_files(proj_type, data_name):
     main_dir = path.join('results', 'projections', data_name)
     proj_dir = path.join(main_dir, proj_type)
     makedirs(proj_dir, exist_ok=True)
-    files = {'meshes_similarity': path.join(main_dir, 'meshes_similarity.npy'),
+    files = {'meshes_similarity': path.join(proj_dir, 'meshes_similarity.npy'),
              'projections': path.join(proj_dir, 'projection.npy'),
              'projections_similarity': path.join(proj_dir, 'projections_similarity.npy'),
              'local_stress': path.join(proj_dir, 'local_stress.npy'),
@@ -16,36 +18,39 @@ def get_files(proj_type, data_name):
     return files
 
 
+def compute_vertex_distance(vertices, i, j, k):
+    """Computes the distance of the same vertex k in meshes i and j."""
+    vertex_dim = vertices.shape[-1]
+    # l is used to loop the vertex coordinates.
+    distance_vector = [vertices[i][k][l] - vertices[j][k][l]
+                       for l in range(0, vertex_dim)]
+    distance_vector = np.array(distance_vector)
+    return np.linalg.norm(distance_vector)
+
+
+def compute_mesh_distances(vertices, i, j):
+    """Computes the distance between meshes i and j."""
+    if i < j:
+        vertices_dist = [compute_vertex_distance(vertices, i, j, k)
+                         for k in range(0, vertices.shape[1])]
+        vertices_dist = np.array(vertices_dist)
+        return vertices_dist.mean()
+    return 0.0
+
+
+def compute_projection_distances(projections, i, j):
+    """Computes the distance between projection of meshes i and j."""
+    if i < j:
+        return compute_vertex_distance(projections, i, j, 0)
+    return 0.0
+
+
 class Projection:
     """Tools for projecting meshes (in the dimensionality reduction sense) to a plane and comparing the projections."""
-
-    def __compute_vertex_distance(self, i, j, k):
-        """Computes the distance of the same vertex k in meshes i and j."""
-        vertex_dim = self.vertices.shape[2]
-        # l is used to loop the vertex coordinates.
-        distance_vector = [self.vertices[i][k][l] - self.vertices[j][k][l]
-                           for l in range(0, vertex_dim)]
-        distance_vector = np.array(distance_vector)
-        return np.linalg.norm(distance_vector)
-
-    def __compute_mesh_distances(self, i, j):
-        """Computes the distance between meshes i and j."""
-        if i < j:
-            vertices_dist = [self.__compute_vertex_distance(i, j, k)
-                             for k in range(0, self.vertices.shape[2])]
-            vertices_dist = np.array(vertices_dist)
-            return vertices_dist.mean()
-        return 0.0
 
     def __project_coma(self, i):
         """Projects mesh i."""
         return self.model.encode(np.array([self.vertices[i]]))
-
-    def __compute_projection_distances(self, i, j):
-        """Computes the distance between projection of meshes i and j."""
-        if i < j:
-            return self.__compute_vertex_distance(i, j, 0)
-        return 0.0
 
     # Second implementation
     # def compute_stress(self):
@@ -82,7 +87,12 @@ class Projection:
     def __init__(self, proj_type, data_name, facedata, model=None):
         self.proj_type = proj_type
         print('Projection type: ' + proj_type)
-        self.vertices = facedata.vertices_test
+
+        if proj_type == 'pca_mds':
+            self.pca_proj = PCAProjection(facedata.vertices_test, 2)
+            self.vertices = self.pca_proj.proj_X
+        else:
+            self.vertices = facedata.vertices_test
 
         files = get_files(proj_type, data_name)
 
@@ -109,23 +119,21 @@ class Projection:
             print('Facedata vertex matrix shape: ' + str(shape))
 
             print('Computing mesh distances...')
-            self.meshes_similarity = np.array([self.__compute_mesh_distances(i, j)
-                                               for i in range(0, shape[0])
-                                               for j in range(0, shape[0])])
+            pool = Pool()
+            params = [(self.vertices, i, j)
+                      for i in range(0, shape[0])
+                      for j in range(0, shape[0])]
+            self.meshes_similarity = np.array(pool.starmap(compute_mesh_distances, params))
             self.meshes_similarity.shape = (shape[0], shape[0])
 
-            # DEBUG
-            # self.meshes_similarity = np.load(files['meshes_similarity'])
-            #
-
-            print('Similarity meshes: ' + str(self.meshes_similarity))
+            print('Similarity meshes: ' + str(self.meshes_similarity.shape))
             np.save(files['meshes_similarity'], self.meshes_similarity)
 
             print('Projecting...')
             if proj_type == 'coma':
                 self.projections = np.array([self.__project_coma(i)
                                             for i in range(0, shape[0])])
-            elif proj_type == 'mds':
+            elif proj_type in ['mds', 'pca_mds']:
                 embedding = MDS(dissimilarity='precomputed')
                 meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
                 self.projections = np.array(embedding.fit_transform(meshes_similarity))
@@ -138,16 +146,21 @@ class Projection:
             else:
                 raise ValueError('Unexpected projection type.')
 
-            self.projections.shape = (shape[0], 2)
+            # Reshape to reuse similarity computation for vertices.
+            self.projections.shape = (shape[0], 1, 2)
 
-            print('Projections: ' + str(self.projections))
+            print('Projections: ' + str(self.projections.shape))
             np.save(files['projections'], self.projections)
 
             print('Computing projection distances...')
-            self.projections_similarity = np.array([self.__compute_projection_distances(i, j)
-                                                    for i in range(0, shape[0])
-                                                    for j in range(0, shape[0])])
+            params = [(self.projections, i, j)
+                      for i in range(0, shape[0])
+                      for j in range(0, shape[0])]
+            self.projections_similarity = np.array(pool.starmap(compute_projection_distances, params))
             self.projections_similarity.shape = (shape[0], shape[0])
+
+            # Reshape to drop additional 1-size dimension.
+            self.projections.shape = (shape[0], 2)
 
             # TEST
             # self.projections_similarity = np.zeros((2, 2))

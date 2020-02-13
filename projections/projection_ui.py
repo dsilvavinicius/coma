@@ -79,6 +79,6 @@ class ProjectionUI:
             elif inverses[i] == 'lamp':
                 self.inverses.append(Ilamp(projection.vertices, projection.projections, 5))
             elif inverses[i] == 'rbf':
-                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1))
+                self.inverses.append(Rbf(projection.vertices, projection.projections, projection.pca_proj, c=0, e=1))
 
         self.__plot_projections()

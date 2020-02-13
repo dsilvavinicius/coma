@@ -1,5 +1,4 @@
 from . import graph
-
 import tensorflow as tf
 import sklearn
 import scipy.sparse
