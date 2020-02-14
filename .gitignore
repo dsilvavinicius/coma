@@ -1,7 +1,6 @@
-results/*
+results/*_predictions*
 summaries/*
 checkpoints/*
 trained_*_bak/*
 logger.txt
 *.pyc
-*.npy
