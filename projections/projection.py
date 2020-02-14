@@ -101,6 +101,7 @@ class Projection:
 
             self.meshes_similarity = np.load(files['meshes_similarity'])
             self.projections = np.load(files['projections'])
+            self.projections.shape = (self.projections.shape[0], self.projections.shape[2])
             self.projections_similarity = np.load(files['projections_similarity'])
 
             self.local_stress = np.load(files['local_stress'])

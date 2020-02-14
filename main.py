@@ -119,9 +119,8 @@ if __name__ == '__main__':
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['project_load']:
-        proj_types = ('coma', 'mds', 'tsne')
+        proj_types = ('coma', 'mds', 'tsne', 'pca_mds')
         projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
-        projections.append(projections[1])
         inverses = ['coma', 'lamp', 'lamp', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
