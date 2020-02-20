@@ -3,6 +3,7 @@ from lib import models, graph, coarsening, utils, mesh_sampling
 from lib.visualize_latent_space import LatentSpaceVisualization
 from projections.projection import Projection
 from projections.projection_ui import ProjectionUI
+from projections.pca_projection import PCAProjection
 import numpy as np
 import json
 import os
@@ -118,19 +119,26 @@ if __name__ == '__main__':
         inverses = ['coma', 'lamp', 'lamp', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
-    elif args.mode in ['project_load']:
-        proj_types = ('coma', 'mds', 'tsne', 'pca_mds')
-        projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
-        inverses = ['coma', 'lamp', 'lamp', 'rbf']
+    elif args.mode in ['pca_projection']:
+        proj_types = ['pca']
+        projections = [Projection(proj_type, args.name, facedata, model) for proj_type in proj_types]
+        inverses = ['pca']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
-    elif args.mode in ['project_test']:
-        # Minimize dataset size.
-        original_shape = facedata.vertices_test.shape
-        facedata.vertices_test.resize(500, original_shape[1], original_shape[2])
-        projection = Projection('pca_mds', args.name + '_test', facedata, model)
+    elif args.mode in ['load_projection']:
+        proj_types = ('coma', 'mds', 'tsne', 'pca')
+        projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
+        inverses = ['coma', 'lamp', 'lamp', 'pca']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
-        ProjectionUI(args.name, [projection], ['rbf'], mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
+        ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
+    elif args.mode in ['pca_projection_test']:
+        pca = PCAProjection(facedata.vertices_test, 2)
+        proj = pca.proj_X
+        reconstructed = np.array([pca.invert(proj[0]), pca.invert(proj[500]), pca.invert(proj[1000])])
+        print('reconstructed shape: ' + str(reconstructed.shape))
+        mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080), figsize=(1, 3))
+        mesh_visualizer.show(mesh=reconstructed)
+        input()
     else:
         if not os.path.exists(os.path.join('checkpoints', args.name)):
             os.makedirs(os.path.join('checkpoints', args.name))

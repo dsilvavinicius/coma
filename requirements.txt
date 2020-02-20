@@ -1,6 +1,7 @@
 numpy
 scipy
 scikit-learn
+tensorly
 matplotlib
 tqdm
 gensim

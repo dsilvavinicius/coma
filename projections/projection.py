@@ -89,8 +89,11 @@ class Projection:
         print('Projection type: ' + proj_type)
 
         if proj_type == 'pca_mds':
-            self.pca_proj = PCAProjection(facedata.vertices_test, 2)
+            self.pca_proj = PCAProjection(facedata.vertices_test, n_components=184)
             self.vertices = self.pca_proj.proj_X
+        elif proj_type == 'pca':
+            self.pca_proj = PCAProjection(facedata.vertices_test, n_components=2)
+            self.vertices = facedata.vertices_test
         else:
             self.vertices = facedata.vertices_test
 
@@ -119,8 +122,8 @@ class Projection:
             shape = self.vertices.shape
             print('Facedata vertex matrix shape: ' + str(shape))
 
-            print('Computing mesh distances...')
             pool = Pool()
+            print('Computing mesh distances...')
             params = [(self.vertices, i, j)
                       for i in range(0, shape[0])
                       for j in range(0, shape[0])]
@@ -144,6 +147,9 @@ class Projection:
                 meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
                 self.projections = np.array(embedding.fit_transform(meshes_similarity))
                 self.global_stress = embedding.kl_divergence_
+            elif proj_type == 'pca':
+                self.projections = self.pca_proj.proj_X
+                self.global_stress = 0
             else:
                 raise ValueError('Unexpected projection type.')
 
@@ -162,10 +168,6 @@ class Projection:
 
             # Reshape to drop additional 1-size dimension.
             self.projections.shape = (shape[0], 2)
-
-            # TEST
-            # self.projections_similarity = np.zeros((2, 2))
-            #
 
             print('Similarity projections: ' + str(self.projections_similarity))
             np.save(files['projections_similarity'], self.projections_similarity)
