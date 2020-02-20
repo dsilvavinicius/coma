@@ -91,6 +91,7 @@ class Projection:
         if proj_type == 'pca_mds':
             self.pca_proj = PCAProjection(facedata.vertices_test, n_components=184)
             self.vertices = self.pca_proj.proj_X
+            self.vertices.shape = (self.vertices.shape[0], self.vertices.shape[1], 1)
         elif proj_type == 'pca':
             self.pca_proj = PCAProjection(facedata.vertices_test, n_components=2)
             self.vertices = facedata.vertices_test

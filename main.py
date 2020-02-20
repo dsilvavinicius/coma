@@ -119,16 +119,16 @@ if __name__ == '__main__':
         inverses = ['coma', 'lamp', 'lamp', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
-    elif args.mode in ['pca_projection']:
-        proj_types = ['pca']
-        projections = [Projection(proj_type, args.name, facedata, model) for proj_type in proj_types]
-        inverses = ['pca']
+    elif args.mode in ['test_projection']:
+        proj_types = ['pca_mds']
+        projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
+        inverses = ['rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['load_projection']:
-        proj_types = ('coma', 'mds', 'tsne', 'pca')
+        proj_types = ('coma', 'mds', 'tsne', 'pca', 'pca_mds')
         projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
-        inverses = ['coma', 'lamp', 'lamp', 'pca']
+        inverses = ['coma', 'lamp', 'lamp', 'pca', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['pca_projection_test']:

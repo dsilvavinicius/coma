@@ -88,6 +88,7 @@ class Rbf:
                 ))
 
         print('q shape: ' + str(q.shape))
+        q.shape = q.shape[0]
         if self.pca is not None:
             q = self.pca.invert(q)
             print('q shape after pca: ' + str(q.shape))
