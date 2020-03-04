@@ -121,14 +121,25 @@ if __name__ == '__main__':
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['test_projection']:
         proj_types = ['pca_mds']
-        projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
+        projections = [Projection(proj_type, args.name, facedata, model, load_matrices=True)
+                       for proj_type in proj_types]
         inverses = ['rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['load_projection']:
         proj_types = ('coma', 'mds', 'tsne', 'pca', 'pca_mds')
-        projections = [Projection(proj_type, args.name, facedata) for proj_type in proj_types]
+        projections = [Projection(proj_type, args.name, facedata, model, load_matrices=True)
+                       for proj_type in proj_types]
         inverses = ['coma', 'lamp', 'lamp', 'pca', 'rbf']
+        mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
+        ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
+    elif args.mode in ['rbf_coma_test']:
+        shape = facedata.vertices_test.shape
+        facedata.vertices_test = np.resize(facedata.vertices_test, (10, shape[1], shape[2]))
+        proj_types = ['coma_mds']
+        projections = [Projection(proj_type, args.name, facedata, model, load_matrices=False)
+                       for proj_type in proj_types]
+        inverses = ['rbf_coma']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['pca_projection_test']:

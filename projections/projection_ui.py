@@ -3,6 +3,7 @@ import numpy as np
 from math import ceil
 from projections.ilamp import Ilamp
 from projections.rbf import Rbf
+from projections.coma_projection import ComaProjection
 
 class ProjectionUI:
     """Exploratory UI for mesh dimensionality reduction projections. Generates a plot for each projection and a mesh
@@ -80,7 +81,10 @@ class ProjectionUI:
                 self.inverses.append(Ilamp(projection.vertices, projection.projections, 5))
             elif inverses[i] == 'rbf':
                 pca = projection.pca_proj if hasattr(projection, 'pca_proj') else None
-                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, pca=pca))
+                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=pca))
+            elif inverses[i] == 'rbf_coma':
+                coma = ComaProjection(model_visualizer.model)
+                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=coma))
             elif inverses[i] == 'pca':
                 self.inverses.append(projection.pca_proj)
 

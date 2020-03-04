@@ -14,7 +14,7 @@ class Rbf:
             # multiquadrics
             return np.sqrt(self.c * self.c + self.e * r * r)
 
-    def __init__(self, x, y, c, e, _type='multiquadrics', pca=None):
+    def __init__(self, x, y, c, e, _type='multiquadrics', rbf_to_mesh=None):
         """ Constructor.
         Parameters
         ----------
@@ -24,8 +24,9 @@ class Rbf:
         y : array
             Array with the projections of the meshes in `x`. Its shape must be (N, 2), where N is the number of meshes.
             Last dimension is the projection dimension (2 since we are in the plane).
-        pca: PCAProjection
-            PCAProjection used to invert further to mesh space.
+        rbf_to_mesh:
+            inverse that transforms from the space resulting from the RBF inverse to mesh space. If None, no further
+            transformation is done.
         c : float
             first constant for rbf function. Used for multiquadrics.
         e : float
@@ -33,7 +34,7 @@ class Rbf:
         """
         print('Starting RBF inverse projection.')
 
-        self.pca = pca
+        self.rbf_to_mesh = rbf_to_mesh
         self.c = c
         self.e = e
         self.type = _type
@@ -89,7 +90,7 @@ class Rbf:
 
         print('q shape: ' + str(q.shape))
         q.shape = q.shape[0]
-        if self.pca is not None:
-            q = self.pca.invert(q)
-            print('q shape after pca: ' + str(q.shape))
+        if self.rbf_to_mesh is not None:
+            q = self.rbf_to_mesh.invert(q)
+            print('q shape after transformation to mesh space: ' + str(q.shape))
         return q

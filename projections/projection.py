@@ -84,8 +84,9 @@ class Projection:
 
         return local_stress, global_stress
 
-    def __init__(self, proj_type, data_name, facedata, model=None):
+    def __init__(self, proj_type, data_name, facedata, model, load_matrices=False):
         self.proj_type = proj_type
+        self.model = model
         print('Projection type: ' + proj_type)
 
         if proj_type == 'pca_mds':
@@ -95,12 +96,15 @@ class Projection:
         elif proj_type == 'pca':
             self.pca_proj = PCAProjection(facedata.vertices_test, n_components=2)
             self.vertices = facedata.vertices_test
+        elif proj_type == 'coma_mds':
+            self.vertices = model.encode(facedata.vertices_test)
+            self.vertices.shape = (self.vertices.shape[0], self.vertices.shape[1], 1)
         else:
             self.vertices = facedata.vertices_test
 
         files = get_files(proj_type, data_name)
 
-        if model is None:
+        if load_matrices:
             print('##### Loading projection. #####')
 
             self.meshes_similarity = np.load(files['meshes_similarity'])
@@ -119,7 +123,6 @@ class Projection:
         else:
             print('##### Starting projection. #####')
 
-            self.model = model
             shape = self.vertices.shape
             print('Facedata vertex matrix shape: ' + str(shape))
 
@@ -138,7 +141,7 @@ class Projection:
             if proj_type == 'coma':
                 self.projections = np.array([self.__project_coma(i)
                                             for i in range(0, shape[0])])
-            elif proj_type in ['mds', 'pca_mds']:
+            elif proj_type in ['mds', 'pca_mds', 'coma_mds']:
                 embedding = MDS(dissimilarity='precomputed')
                 meshes_similarity = self.meshes_similarity + self.meshes_similarity.transpose()
                 self.projections = np.array(embedding.fit_transform(meshes_similarity))
