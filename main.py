@@ -134,8 +134,8 @@ if __name__ == '__main__':
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['rbf_coma_test']:
-        shape = facedata.vertices_test.shape
-        facedata.vertices_test = np.resize(facedata.vertices_test, (10, shape[1], shape[2]))
+        #shape = facedata.vertices_test.shape
+        #facedata.vertices_test = np.resize(facedata.vertices_test, (10, shape[1], shape[2]))
         proj_types = ['coma_mds']
         projections = [Projection(proj_type, args.name, facedata, model, load_matrices=False)
                        for proj_type in proj_types]
