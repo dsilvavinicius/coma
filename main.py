@@ -114,9 +114,9 @@ if __name__ == '__main__':
     elif args.mode in ['latent']:
         LatentSpaceVisualization(model, facedata)
     elif args.mode in ['project']:
-        proj_types = ('coma', 'mds', 'tsne', 'pca_mds')
+        proj_types = ('coma_mds', 'mds', 'tsne', 'pca_mds')
         projections = [Projection(proj_type, args.name, facedata, model) for proj_type in proj_types]
-        inverses = ['coma', 'lamp', 'lamp', 'rbf']
+        inverses = ['rbf_coma', 'lamp', 'lamp', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['test_projection']:
@@ -127,17 +127,17 @@ if __name__ == '__main__':
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['load_projection']:
-        proj_types = ('coma', 'mds', 'tsne', 'pca', 'pca_mds')
+        proj_types = ('coma_mds', 'mds', 'tsne', 'pca', 'pca_mds')
         projections = [Projection(proj_type, args.name, facedata, model, load_matrices=True)
                        for proj_type in proj_types]
-        inverses = ['coma', 'lamp', 'lamp', 'pca', 'rbf']
+        inverses = ['rbf_coma', 'lamp', 'lamp', 'pca', 'rbf']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
         ProjectionUI(args.name, projections, inverses, mesh_visualizer, fig_size=(14.0, 10.0), fig_pos=(1080, 0))
     elif args.mode in ['rbf_coma_test']:
         #shape = facedata.vertices_test.shape
         #facedata.vertices_test = np.resize(facedata.vertices_test, (10, shape[1], shape[2]))
         proj_types = ['coma_mds']
-        projections = [Projection(proj_type, args.name, facedata, model, load_matrices=False)
+        projections = [Projection(proj_type, args.name, facedata, model, load_matrices=True)
                        for proj_type in proj_types]
         inverses = ['rbf_coma']
         mesh_visualizer = LatentSpaceVisualization(model, facedata, viewer_size=(1080, 1080))
