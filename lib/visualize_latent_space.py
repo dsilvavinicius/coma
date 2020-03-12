@@ -51,9 +51,8 @@ class LatentSpaceVisualization:
         self.model = model
         self.facedata = facedata
         self.mesh_path = mesh_path
-        self.viewer = MeshViewers(window_width=viewer_size[0], window_height=viewer_size[1], shape=figsize,
-                                  titlebar='Meshes')
-
+        self.viewer, self.process = MeshViewers(window_width=viewer_size[0], window_height=viewer_size[1],
+                                                shape=figsize, titlebar='Meshes')
 
         # Encode
         if mesh_path is not None:

@@ -63,6 +63,9 @@ class ProjectionUI:
             except AttributeError:
                 print("Could not set plots position. Using default.")
         plt.show()
+        stdout, stderr = self.model_visualizer.process.communicate()
+        print(stdout.decode())
+        print(stderr.decode())
 
     def __init__(self, data_name, projections, inverses, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0)):
         self.data_name = data_name
