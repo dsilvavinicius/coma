@@ -4,6 +4,7 @@ from math import ceil
 from projections.ilamp import Ilamp
 from projections.rbf import Rbf
 from projections.coma_projection import ComaProjection
+from projections.inverse_projection import inverse_error, get_inverse_projection_files
 
 class ProjectionUI:
     """Exploratory UI for mesh dimensionality reduction projections. Generates a plot for each projection and a mesh
@@ -44,9 +45,10 @@ class ProjectionUI:
             plt.subplot(2, ceil(len(self.projections) / 2), i + 1)
             projection = self.projections[i]
             plt.scatter(projection.projections[:, 0], projection.projections[:, 1], c=projection.local_stress)
-            plt.title(self.data_name + ': ' + projection.proj_type + ' projection. N = '
-                      + str(len(projection.projections)) + ' Global stress = '
-                      + '{:.4f}'.format(projection.global_stress))
+            plt.title(self.data_name + ': ' + projection.proj_type + ' N = '
+                      + str(len(projection.projections)) + ' stress = '
+                      + '{:.4f}'.format(projection.global_stress) + ' error = '
+                      + '{:.4f}'.format(self.errors[i].mean()))
             plt.colorbar(label='local stress')
             plt.gcf().canvas.mpl_connect('button_press_event', self.__on_click)
             plt.gcf().canvas.mpl_connect('button_release_event', self.__on_release)
@@ -67,10 +69,12 @@ class ProjectionUI:
         print(stdout.decode())
         print(stderr.decode())
 
-    def __init__(self, data_name, projections, inverses, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0)):
+    def __init__(self, data_name, projections, inverses, model_visualizer, fig_size=(8.0, 8.0), fig_pos=(800, 0),
+                 load_errors=False):
         self.data_name = data_name
         self.projections = projections
         self.inverses = []
+        self.errors = []
         self.model_visualizer = model_visualizer
         self.clicking = False
         self.fig_size = fig_size
@@ -80,15 +84,26 @@ class ProjectionUI:
             projection = projections[i]
             if inverses[i] == 'coma':
                 self.inverses.append(None)
-            elif inverses[i] == 'lamp':
-                self.inverses.append(Ilamp(projection.vertices, projection.projections, 5))
-            elif inverses[i] == 'rbf':
-                pca = projection.pca_proj if hasattr(projection, 'pca_proj') else None
-                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=pca))
-            elif inverses[i] == 'rbf_coma':
-                coma = ComaProjection(model_visualizer.model)
-                self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=coma))
-            elif inverses[i] == 'pca':
-                self.inverses.append(projection.pca_proj)
+                self.errors.append(None)
+            else:
+                if inverses[i] == 'lamp':
+                    self.inverses.append(Ilamp(projection.vertices, projection.projections, 5))
+                elif inverses[i] == 'rbf':
+                    pca = projection.pca_proj if hasattr(projection, 'pca_proj') else None
+                    self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=pca))
+                elif inverses[i] == 'rbf_coma':
+                    coma = ComaProjection(model_visualizer.model)
+                    self.inverses.append(Rbf(projection.vertices, projection.projections, c=0, e=1, rbf_to_mesh=coma))
+                elif inverses[i] == 'pca':
+                    self.inverses.append(projection.pca_proj)
+
+                files = get_inverse_projection_files(inverses[i], data_name)
+                if load_errors:
+                    self.errors.append(np.load(files['errors']))
+                else:
+                    errors = inverse_error(model_visualizer.facedata.vertices_test, projection.projections,
+                                           self.inverses[i])
+                    self.errors.append(errors)
+                    np.save(files['errors'], errors)
 
         self.__plot_projections()
